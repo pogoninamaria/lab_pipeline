@@ -2,7 +2,6 @@
 #include <string>
 #include <fstream>
 using namespace std;
-
 struct Pipe
 {
     int d; //диаметр(мм)
@@ -20,7 +19,6 @@ struct CS
 void NewPipe(Pipe& p)
 {
     cout << "Input diametr(mm), length(km), name, status (1-work, 0-don`t work)" << endl;
-    //cin >> p.d >> p.l >> p.n >> p.isWorking;
     while (true)
     {
         if (cin >> p.d && cin.peek() == '\n' && p.d > 0 && p.d < 100000)
@@ -50,7 +48,7 @@ void NewPipe(Pipe& p)
     }
     while (true)
     {
-        if (cin >> p.isWorking && cin.peek() == '\n' && p.isWorking == 0 || p.isWorking == 1)
+        if (cin >> p.isWorking && cin.peek() == '\n' && (p.isWorking == 0 || p.isWorking == 1))
         {
             break;
         }
@@ -63,7 +61,6 @@ void NewPipe(Pipe& p)
 void NewCS(CS& cs)
 {
     cout << "Input name of CS, workshops, actworkshops, class of station" << endl;
-    //cin >> cs.n2 >> cs.workshop;
     while (true)
     {
         getline(cin >> ws, cs.n2);
@@ -109,10 +106,11 @@ void PrintPipe(const Pipe& p, bool PipeExist)
         cout << "Pipe doesn`t exist.\n";
         return;
     }
+    cout << "Pipe:\n";
     cout << "d = " << p.d << endl;
     cout << "l = " << p.l << endl;
     cout << "n = " << p.n << endl;
-    cout << (p.isWorking ? "" : "Don't ") << "work";
+    cout << "status: " << (p.isWorking ? "" : "Don't ") << "work.\n";
 }
 void PrintCS(const CS& cs, bool CsExist)
 {
@@ -121,6 +119,7 @@ void PrintCS(const CS& cs, bool CsExist)
         cout << "CS doesn`t exist.\n";
         return;
     }
+    cout << "CS:\n";
     cout << "name of CS = " << cs.n2 << endl;
     cout << "workshops = " << cs.workshop << endl;
     cout << "actworkshops = " << cs.actworkshop << endl;
@@ -133,8 +132,12 @@ void EditPipe(Pipe& p, bool PipeExist)
         cout << "Pipe doesn`t exist.\n";
         return;
     }
+    if (p.isWorking == true)
+        cout << "Pipe is working now.\n";
+    else
+        cout << "Pipe isn`t working now.\n";
     cout << "1 - Pipe is working" << endl;
-    cout << "2 - Pipe is repairing." << endl;
+    cout << "2 - Pipe isn`t working." << endl;
     int choice;
     cin >> choice;
     while (choice != 1 && choice != 2)
@@ -150,7 +153,7 @@ void EditPipe(Pipe& p, bool PipeExist)
     {
         p.isWorking = false;
     }
-    cout << "Pipe is changed";
+    cout << "Pipe is changed.\n";
 }
 void EditCs(CS& cs, bool CsExist)
 {
@@ -175,23 +178,23 @@ void EditCs(CS& cs, bool CsExist)
         if (cs.actworkshop < cs.workshop)
         {
             cs.actworkshop++;
-            cout << "Workshop started.";
+            cout << "Workshop started.\n";
         }
         else
         {
-            cout << "All workshops are active.";
+            cout << "All workshops are active.\n";
         }
     }
     else
     {
-        if (cs.actworkshop < 0)
+        if (cs.actworkshop > 0)
         {
             cs.actworkshop--;
-            cout << "Workshop stopped.";
+            cout << "Workshop stopped.\n";
         }
         else
         {
-            cout << "There are not active workshops.";
+            cout << "There are not active workshops.\n";
         }
     }
 }
@@ -200,7 +203,7 @@ void SavePipe(const Pipe& p, bool PipeExist)
     ofstream file("pipe.txt");
     if (!PipeExist)
     {
-        file << "Pipe doesn`t exist.";
+        file << "Pipe doesn`t exist.\n";
         file.close();
         return;
     }
@@ -216,7 +219,7 @@ void SaveCs(const CS& cs, bool CsExist)
     ofstream file("cs.txt");
     if (!CsExist)
     {
-        file << "CS doesn`t exist.";
+        file << "CS doesn`t exist.\n";
         file.close();
         return;
     }
