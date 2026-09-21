@@ -152,7 +152,7 @@ void EditPipe(Pipe& p, bool PipeExist)
     }
     cout << "Pipe is changed";
 }
-void EditCS(CS& cs, bool CsExist)
+void EditCs(CS& cs, bool CsExist)
 {
     if (!CsExist)
     {
@@ -251,5 +251,77 @@ void LoadCs(CS& cs, bool& CsExist)
 }
 int main()
 {
- 
+    Pipe p = {};
+    CS cs = {};
+    bool PipeExist = false;
+    bool CsExist = false;
+    int choice;
+    do
+    {
+        cout << "\n           MENU           \n";
+        cout << "1. Add pipe\n";
+        cout << "2. Add CS\n";
+        cout << "3. View all objects\n";
+        cout << "4. Edit pipe\n";
+        cout << "5. Edit CS\n";
+        cout << "6. Save\n";
+        cout << "7. Load\n";
+        cout << "0. Exit\n";
+        if (cin >> choice && cin.peek() == '\n' && choice >= 0 && choice <= 7)
+        {
+            switch (choice)
+            {
+            case 1:
+                if (PipeExist)
+                {
+                    cout << "Pipe has already existed.\n";
+                }
+                else
+                {
+                    NewPipe(p);
+                    PipeExist = true;
+                }
+                break;
+            case 2:
+                if (CsExist)
+                {
+                    cout << "CS has already existed.\n";
+                }
+                else
+                {
+                    NewCS(cs);
+                    CsExist = true;
+                }
+                break;
+            case 3:
+                PrintPipe(p, PipeExist);
+                PrintCS(cs, CsExist);
+                break;
+            case 4:
+                EditPipe(p, PipeExist);
+                break;
+            case 5:
+                EditCs(cs, CsExist);
+                break;
+            case 6:
+                SavePipe(p, PipeExist);
+                SaveCs(cs, CsExist);
+                break;
+            case 7:
+                LoadPipe(p, PipeExist);
+                LoadCs(cs, CsExist);
+                break;
+            case 0:
+                cout << "Program finished.\n";
+                break;
+            }
+        }
+        else
+        {
+            cout << "Error: enter a number from 0 to 7.\n";
+            cin.clear();
+            cin.ignore(10000, '\n');
+        }
+    } while (choice != 0);
+    return 0;
 }
