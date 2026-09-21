@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 using namespace std;
 
 struct Pipe
@@ -194,7 +195,60 @@ void EditCS(CS& cs, bool CsExist)
         }
     }
 }
-
+void SavePipe(const Pipe& p, bool PipeExist)
+{
+    ofstream file("pipe.txt");
+    if (!PipeExist)
+    {
+        file << "Pipe doesn`t exist.";
+        file.close();
+        return;
+    }
+    file << p.d << endl;
+    file << p.l << endl;
+    file << p.n << endl;
+    file << p.isWorking << endl;
+    file.close();
+    cout << "Pipe saved.\n";
+}
+void SaveCs(const CS& cs, bool CsExist)
+{
+    ofstream file("cs.txt");
+    if (!CsExist)
+    {
+        file << "CS doesn`t exist.";
+        file.close();
+        return;
+    }
+    file << cs.n2 << endl;
+    file << cs.workshop << endl;
+    file << cs.actworkshop << endl;
+    file << cs.station << endl;
+    file.close();
+    cout << "CS saved.\n";
+}
+void LoadPipe(Pipe& p, bool& PipeExist)
+{
+    ifstream file("pipe.txt");
+    file >> p.d;
+    file >> p.l;
+    getline(file >> ws, p.n);
+    file >> p.isWorking;
+    PipeExist = true;
+    file.close();
+    cout << "Pipe loaded.\n";
+}
+void LoadCs(CS& cs, bool& CsExist)
+{
+    ifstream file("cs.txt");
+    getline(file >> ws, cs.n2);
+    file >> cs.workshop;
+    file >> cs.actworkshop;
+    file >> cs.station;
+    CsExist = true;
+    file.close();
+    cout << "Cs loaded.\n";
+}
 int main()
 {
  
