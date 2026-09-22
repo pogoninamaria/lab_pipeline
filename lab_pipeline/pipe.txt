@@ -1,4 +1,1 @@
-1234
-234
-pipe 1
-1
+Pipe doesn`t exist.

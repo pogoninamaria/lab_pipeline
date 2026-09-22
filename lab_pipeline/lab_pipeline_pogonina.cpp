@@ -43,8 +43,6 @@ void NewPipe(Pipe& p)
     {
         getline(cin >> ws, p.n);
         break;
-        cin.clear();
-        cin.ignore(10000, '\n');
     }
     while (true)
     {
@@ -65,8 +63,6 @@ void NewCS(CS& cs)
     {
         getline(cin >> ws, cs.n2);
         break;
-        cin.clear();
-        cin.ignore(10000, '\n');
     }
     while (true)
     {
@@ -110,7 +106,7 @@ void PrintPipe(const Pipe& p, bool PipeExist)
     cout << "d = " << p.d << endl;
     cout << "l = " << p.l << endl;
     cout << "n = " << p.n << endl;
-    cout << "status: " << (p.isWorking ? "" : "Don't ") << "work.\n";
+    cout << "status: " << (p.isWorking ? "" : "don't ") << "work.\n";
 }
 void PrintCS(const CS& cs, bool CsExist)
 {
@@ -132,10 +128,7 @@ void EditPipe(Pipe& p, bool PipeExist)
         cout << "Pipe doesn`t exist.\n";
         return;
     }
-    if (p.isWorking == true)
-        cout << "Pipe is working now.\n";
-    else
-        cout << "Pipe isn`t working now.\n";
+    cout << "Pipe is " << (p.isWorking ? "" : "not ") << "working now.\n";//!!
     cout << "1 - Pipe is working" << endl;
     cout << "2 - Pipe isn`t working." << endl;
     int choice;
@@ -143,16 +136,11 @@ void EditPipe(Pipe& p, bool PipeExist)
     while (choice != 1 && choice != 2)
     {
         cerr << "Error: enter 1 or 2" << endl;
+        cin.clear();
+        cin.ignore(10000, '\n');
         cin >> choice;
     }
-    if (choice == 1)
-    {
-        p.isWorking = true;
-    }
-    else
-    {
-        p.isWorking = false;
-    }
+    p.isWorking = (choice == 1);
     cout << "Pipe is changed.\n";
 }
 void EditCs(CS& cs, bool CsExist)
@@ -171,6 +159,8 @@ void EditCs(CS& cs, bool CsExist)
     while (choice2 != 1 && choice2 != 2)
     {
         cerr << "Error: enter 1 or 2" << endl;
+        cin.clear();
+        cin.ignore(10000, '\n');
         cin >> choice2;
     }
     if (choice2 == 1)
@@ -181,9 +171,7 @@ void EditCs(CS& cs, bool CsExist)
             cout << "Workshop started.\n";
         }
         else
-        {
             cout << "All workshops are active.\n";
-        }
     }
     else
     {
@@ -193,64 +181,105 @@ void EditCs(CS& cs, bool CsExist)
             cout << "Workshop stopped.\n";
         }
         else
-        {
             cout << "There are not active workshops.\n";
-        }
     }
 }
 void SavePipe(const Pipe& p, bool PipeExist)
 {
-    ofstream file("pipe.txt");
-    if (!PipeExist)
+    ofstream fout("file.txt");//!!
+    if (fout)
     {
-        file << "Pipe doesn`t exist.\n";
-        file.close();
-        return;
+        fout << PipeExist << endl;
+        if (PipeExist)
+        {
+            fout << p.d << endl;
+            fout << p.l << endl;
+            fout << p.n << endl;
+            fout << p.isWorking << endl;
+        }
+        fout.close();
+        cout << "Pipe saved.\n";
     }
-    file << p.d << endl;
-    file << p.l << endl;
-    file << p.n << endl;
-    file << p.isWorking << endl;
-    file.close();
-    cout << "Pipe saved.\n";
+    else
+    {
+        cout << "File isn`t found.\n";
+    }
 }
-void SaveCs(const CS& cs, bool CsExist)
+void SaveCs(const CS & cs, bool CsExist)
 {
-    ofstream file("cs.txt");
-    if (!CsExist)
+    ofstream fout("file.txt", ios::app);//!!
+    if (fout)
     {
-        file << "CS doesn`t exist.\n";
-        file.close();
-        return;
+        fout << CsExist << endl;
+        if (CsExist)
+        {
+            fout << cs.n2 << endl;
+            fout << cs.workshop << endl;
+            fout << cs.actworkshop << endl;
+            fout << cs.station << endl;
+        }
+        fout.close();
+        cout << "CS saved.\n";
     }
-    file << cs.n2 << endl;
-    file << cs.workshop << endl;
-    file << cs.actworkshop << endl;
-    file << cs.station << endl;
-    file.close();
-    cout << "CS saved.\n";
+    else
+    {
+        cout << "File isn`t found.\n";
+    }
 }
 void LoadPipe(Pipe& p, bool& PipeExist)
 {
-    ifstream file("pipe.txt");
-    file >> p.d;
-    file >> p.l;
-    getline(file >> ws, p.n);
-    file >> p.isWorking;
-    PipeExist = true;
-    file.close();
-    cout << "Pipe loaded.\n";
+    ifstream fin("file.txt");
+    if (fin)
+    {
+        fin >> PipeExist;
+        if (PipeExist)
+        {
+            fin >> p.d;
+            fin >> p.l;
+            getline(fin >> ws, p.n);
+            fin >> p.isWorking;
+        }
+        fin.close();
+        cout << "Pipe loaded.\n";
+    }
+    else
+    {
+        cout << "File isn`t found.\n";
+    }
 }
 void LoadCs(CS& cs, bool& CsExist)
 {
-    ifstream file("cs.txt");
-    getline(file >> ws, cs.n2);
-    file >> cs.workshop;
-    file >> cs.actworkshop;
-    file >> cs.station;
-    CsExist = true;
-    file.close();
-    cout << "Cs loaded.\n";
+    ifstream fin("file.txt");
+    if (fin)
+    {
+        bool PipeExists;
+        fin >> PipeExists;
+        if (PipeExists)
+        {
+            int d;
+            double l;
+            string n;
+            bool isWorking;
+            fin >> d;
+            fin >> l;
+            getline(fin >> ws, n);
+            fin >> isWorking;
+        }
+        fin >> CsExist;
+        if (CsExist)
+        {
+            getline(fin >> ws, cs.n2);
+            fin >> cs.workshop;
+            fin >> cs.actworkshop;
+            fin >> cs.station;
+        }
+        fin.close();
+        cout << "CS loaded.\n";
+    }
+    else
+    {
+        cout << "File isn`t found.\n";
+    }
 }
 int main()
 {
@@ -258,7 +287,7 @@ int main()
     CS cs = {};
     bool PipeExist = false;
     bool CsExist = false;
-    int choice;
+    int choice = -1;
     do
     {
         cout << "\n           MENU           \n";
@@ -270,10 +299,15 @@ int main()
         cout << "6. Save\n";
         cout << "7. Load\n";
         cout << "0. Exit\n";
-        if (cin >> choice && cin.peek() == '\n' && choice >= 0 && choice <= 7)
+        if (!(cin >> choice && cin.peek() == '\n' && choice >= 0 && choice <= 7))
         {
-            switch (choice)
-            {
+            cout << "Error: enter a number from 0 to 7.\n";
+            cin.clear();
+            cin.ignore(10000, '\n');
+            choice = -1;
+        }
+        switch (choice)
+        {
             case 1:
                 if (PipeExist)
                 {
@@ -317,13 +351,6 @@ int main()
             case 0:
                 cout << "Program finished.\n";
                 break;
-            }
-        }
-        else
-        {
-            cout << "Error: enter a number from 0 to 7.\n";
-            cin.clear();
-            cin.ignore(10000, '\n');
         }
     } while (choice != 0);
     return 0;
