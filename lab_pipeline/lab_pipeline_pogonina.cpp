@@ -90,6 +90,7 @@ void NewCS(CS& cs)
         {
             break;
         }
+        cerr << "Error: input a symbol.\n";
         cin.clear();
         cin.ignore(10000, '\n');
     }
