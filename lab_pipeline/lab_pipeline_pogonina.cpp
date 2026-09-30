@@ -129,17 +129,16 @@ void EditPipe(Pipe& p, bool PipeExist)
         cout << "Pipe doesn`t exist.\n";
         return;
     }
-    cout << "Pipe is " << (p.isWorking ? "" : "not ") << "working now.\n";//!!
+    cout << "Pipe is " << (p.isWorking ? "" : "not ") << "working now.\n";
     cout << "1 - Pipe is working" << endl;
     cout << "2 - Pipe isn`t working." << endl;
+
     int choice;
-    cin >> choice;
-    while (choice != 1 && choice != 2)
+    while (!(cin >> choice && cin.peek() == '\n' && (choice == 1 || choice == 2)))
     {
         cerr << "Error: enter 1 or 2" << endl;
         cin.clear();
         cin.ignore(10000, '\n');
-        cin >> choice;
     }
     p.isWorking = (choice == 1);
     cout << "Pipe is changed.\n";
@@ -157,7 +156,7 @@ void EditCs(CS& cs, bool CsExist)
     cout << "2 - Stop workshop." << endl;
     int choice2;
     cin >> choice2;
-    while (choice2 != 1 && choice2 != 2)
+    while (!(cin >> choice2 && cin.peek() == '\n' && (choice2 == 1 || choice2 == 2)))
     {
         cerr << "Error: enter 1 or 2" << endl;
         cin.clear();
@@ -185,102 +184,91 @@ void EditCs(CS& cs, bool CsExist)
             cout << "There are not active workshops.\n";
     }
 }
-void SavePipe(const Pipe& p, bool PipeExist)
+void SavePipe(ofstream& fout, const Pipe& p, bool PipeExist)
 {
-    ofstream fout("file.txt");//!!
-    if (fout)
+    //ofstream fout("file.txt");//!!
+    fout << PipeExist << endl;
+    if (PipeExist)
     {
-        fout << PipeExist << endl;
-        if (PipeExist)
-        {
-            fout << p.d << endl;
-            fout << p.l << endl;
-            fout << p.n << endl;
-            fout << p.isWorking << endl;
-        }
-        fout.close();
-        cout << "Pipe saved.\n";
-    }
-    else
-    {
-        cout << "File isn`t found.\n";
+       fout << p.d << endl;
+       fout << p.l << endl;
+       fout << p.n << endl;
+       fout << p.isWorking << endl;
+       cout << "Pipe saved.\n";
     }
 }
-void SaveCs(const CS & cs, bool CsExist)
+void SaveCs(ofstream& fout, const CS & cs, bool CsExist)
 {
-    ofstream fout("file.txt", ios::app);//!!
-    if (fout)
+    //ofstream fout("file.txt", ios::app);//!!
+    fout << CsExist << endl;
+    if (CsExist)
     {
-        fout << CsExist << endl;
-        if (CsExist)
-        {
-            fout << cs.n2 << endl;
-            fout << cs.workshop << endl;
-            fout << cs.actworkshop << endl;
-            fout << cs.station << endl;
-        }
-        fout.close();
+        fout << cs.n2 << endl;
+        fout << cs.workshop << endl;
+        fout << cs.actworkshop << endl;
+        fout << cs.station << endl;
         cout << "CS saved.\n";
     }
-    else
-    {
-        cout << "File isn`t found.\n";
-    }
 }
-void LoadPipe(Pipe& p, bool& PipeExist)
+void SaveAll(const Pipe& p, bool PipeExist, const CS& cs, bool CsExist)
 {
-    ifstream fin("file.txt");
-    if (fin)
+    ofstream fout("file.txt");
+    if (!fout)
     {
-        fin >> PipeExist;
-        if (PipeExist)
-        {
-            fin >> p.d;
-            fin >> p.l;
-            getline(fin >> ws, p.n);
-            fin >> p.isWorking;
-        }
-        fin.close();
+        cout << "File isn't found.\n";
+        return;
+    }
+    SavePipe(fout, p, PipeExist);
+    SaveCs(fout, cs, CsExist);
+    fout.close();
+    cout << "All saved.\n";
+}
+void LoadPipe(ifstream& fin, Pipe& p, bool& PipeExist)
+{
+    //ifstream fin("file.txt");
+    fin >> PipeExist;
+    if (PipeExist)
+    {
+        fin >> p.d;
+        fin >> p.l;
+        getline(fin >> ws, p.n);
+        fin >> p.isWorking;
         cout << "Pipe loaded.\n";
     }
     else
     {
-        cout << "File isn`t found.\n";
+        cout << "Pipe doesn't exist.\n";
     }
 }
-void LoadCs(CS& cs, bool& CsExist)
+void LoadCs(ifstream& fin, CS& cs, bool& CsExist)
 {
-    ifstream fin("file.txt");
-    if (fin)
+    //ifstream fin("file.txt");
+    fin >> CsExist;
+    if (CsExist)
     {
-        bool PipeExists;
-        fin >> PipeExists;
-        if (PipeExists)
-        {
-            int d;
-            double l;
-            string n;
-            bool isWorking;
-            fin >> d;
-            fin >> l;
-            getline(fin >> ws, n);
-            fin >> isWorking;
-        }
-        fin >> CsExist;
-        if (CsExist)
-        {
-            getline(fin >> ws, cs.n2);
-            fin >> cs.workshop;
-            fin >> cs.actworkshop;
-            fin >> cs.station;
-        }
-        fin.close();
+        getline(fin >> ws, cs.n2);
+        fin >> cs.workshop;
+        fin >> cs.actworkshop;
+        fin >> cs.station;
         cout << "CS loaded.\n";
     }
     else
     {
-        cout << "File isn`t found.\n";
+        cout << "CS doesn't exist.\n";
     }
+}
+void LoadAll(Pipe& p, bool& PipeExist, CS& cs, bool& CsExist)
+{
+    ifstream fin("file.txt");
+    if (!fin)
+    {
+        cout << "File isn't found.\n";
+        return;
+    }
+    LoadPipe(fin, p, PipeExist);
+    LoadCs(fin, cs, CsExist);
+    fin.close();
+    cout << "All loaded.\n";
 }
 int main()
 {
@@ -342,12 +330,10 @@ int main()
                 EditCs(cs, CsExist);
                 break;
             case 6:
-                SavePipe(p, PipeExist);
-                SaveCs(cs, CsExist);
+                SaveAll(p, PipeExist, cs, CsExist);
                 break;
             case 7:
-                LoadPipe(p, PipeExist);
-                LoadCs(cs, CsExist);
+                LoadAll(p, PipeExist, cs, CsExist);
                 break;
             case 0:
                 cout << "Program finished.\n";
