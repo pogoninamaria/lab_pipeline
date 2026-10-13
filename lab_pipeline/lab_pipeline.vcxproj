@@ -140,7 +140,13 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CS.cpp" />
     <ClCompile Include="lab_pipeline_pogonina.cpp" />
+    <ClCompile Include="Pipe.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CS.h" />
+    <ClInclude Include="Pipe.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

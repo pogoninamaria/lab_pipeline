@@ -1,23 +1,11 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include "Pipe.h"
+#include "CS.h"
+
 using namespace std;
-class Pipe
-{
-public:
-    int d; //диаметр(мм)
-    double l; //длина(км)
-    std::string n; //километровая оценка
-    bool isWorking; //ремонт трубы
-};
-class CS
-{
-public:
-    std::string n2; //название
-    int workshop; //количество цехов
-    int actworkshop; //количество работающих цехов
-    char station; //класс станции
-};
+
 void NewPipe(Pipe& p)
 {
     cout << "Input diametr(mm), length(km), name, status (1-work, 0-don`t work)" << endl;
