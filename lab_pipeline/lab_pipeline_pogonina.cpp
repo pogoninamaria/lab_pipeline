@@ -2,15 +2,17 @@
 #include <string>
 #include <fstream>
 using namespace std;
-struct Pipe
+class Pipe
 {
+public:
     int d; //диаметр(мм)
     double l; //длина(км)
     std::string n; //километровая оценка
     bool isWorking; //ремонт трубы
 };
-struct CS
+class CS
 {
+public:
     std::string n2; //название
     int workshop; //количество цехов
     int actworkshop; //количество работающих цехов
@@ -138,7 +140,7 @@ void EditPipe(Pipe& p, bool PipeExist)
     {
         cerr << "Error: enter 1 or 2" << endl;
         cin.clear();
-        cin.ignore(10000, '\n');
+        cin.ignore(1000, '\n');
     }
     p.isWorking = (choice == 1);
     cout << "Pipe is changed.\n";
@@ -155,7 +157,6 @@ void EditCs(CS& cs, bool CsExist)
     cout << "1 - Start workshop." << endl;
     cout << "2 - Stop workshop." << endl;
     int choice2;
-    cin >> choice2;
     while (!(cin >> choice2 && cin.peek() == '\n' && (choice2 == 1 || choice2 == 2)))
     {
         cerr << "Error: enter 1 or 2" << endl;
