@@ -1,333 +1,191 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <unordered_map>
 #include <fstream>
+#include <chrono>
+#include <format>
 #include "Pipe.h"
 #include "CS.h"
-
+#include "utils.h"
 using namespace std;
+using namespace chrono;
+void PrintMenu()
+{
+    cout << "\n           MENU           " << endl
+        << "1. Add pipe" << endl
+        << "2. Add CS" << endl
+        << "3. View all objects" << endl
+        << "4. Search and edit pipe" << endl
+        << "5. Search and edit cs" << endl
+        << "6. Save" << endl
+        << "7. Load" << endl
+        << "0. Exit" << endl
+        << "Choose action: ";
+}
+bool filter_pipe_name(const Pipe& p, const string& x) {
+    return p.get_name().find(x) != string::npos;
+}
+bool filter_pipe_repair(const Pipe& p, const bool& x) {
+    return p.get_repair() == x;
+}
+bool filter_cs_name(const CS& c, const string& x) {
+    return c.get_name().find(x) != string::npos;
+}
+bool filter_cs_idle(const CS& c, const double& x) {
+    if (c.get_workshop() == 0) return false;
+    double idle = 100.0 * (c.get_workshop() - c.get_actworkshop()) / c.get_workshop();
+    return idle >= x;
+}
+template <typename TObj, typename T>
+using Filter = bool(*)(const TObj& o, const T& x);
 
-void NewPipe(Pipe& p)
+template <typename TObj, typename T>
+vector<int> Search(const unordered_map<int, TObj*>& objs, T x, Filter<TObj, T> f)
 {
-    cout << "Input diametr(mm), length(km), name, status (1-work, 0-don`t work)" << endl;
-    while (true)
+    vector<int> subset;
+    for (const auto& [id, obj] : objs)
     {
-        if (cin >> p.d && cin.peek() == '\n' && p.d > 0 && p.d < 100000)
-        {
-            break;
-        }
-        cerr << "Error: input a positive value.";
-        cin.clear();
-        cin.ignore(10000, '\n');
+        if (f(*obj, x)) subset.push_back(id);
     }
-    while (true)
-    {
-        if (cin >> p.l && cin.peek() == '\n' && p.l > 0 && p.l < 100000)
-        {
-            break;
-        }
-        cerr << "Error: input a positive value.";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
-    while (true)
-    {
-        getline(cin >> ws, p.n);
-        break;
-    }
-    while (true)
-    {
-        if (cin >> p.isWorking && cin.peek() == '\n' && (p.isWorking == 0 || p.isWorking == 1))
-        {
-            break;
-        }
-        cerr << "Error: input 0 or 1.";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
-    cout << "New pipe added.\n";
+    return subset;
 }
-void NewCS(CS& cs)
+vector<int> select_ids(const vector<int>& found)
 {
-    cout << "Input name of CS, workshops, actworkshops, class of station" << endl;
-    while (true)
-    {
-        getline(cin >> ws, cs.n2);
-        break;
-    }
-    while (true)
-    {
-        if (cin >> cs.workshop && cin.peek() == '\n' && cs.workshop > 0 && cs.workshop < 1000)
-        {
-            break;
+    cout << "1 - All found, 2 - Specific IDs: ";
+    if (GetCorrectNumber(1, 2) == 1) return found;
+    vector<int> chosen;
+    int count = GetCorrectNumber(1, (int)found.size());
+    for (int i = 0; i < count; i++) {
+        cout << "Enter ID: ";
+        int id = GetCorrectNumber(1, 10000);
+        if (find(found.begin(), found.end(), id) != found.end())
+            chosen.push_back(id);
+        else {
+            cout << "Not found. Try again.\n";
+            i--;
         }
-        cerr << "Error: input a positive value.";
-        cin.clear();
-        cin.ignore(10000, '\n');
     }
-    while (true)
-    {
-        if (cin >> cs.actworkshop && cin.peek() == '\n' && cs.actworkshop >= 0 && cs.actworkshop <= cs.workshop)
-        {
-            break;
-        }
-        cerr << "Error: input a value from 0 to " << cs.workshop << "\n";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
-    while (true)
-    {
-        if (cin >> cs.station && cin.peek() == '\n')
-        {
-            break;
-        }
-        cerr << "Error: input a symbol.\n";
-        cin.clear();
-        cin.ignore(10000, '\n');
-    }
-    cout << "New CS added.\n";
+    return chosen;
 }
-void PrintPipe(const Pipe& p, bool PipeExist)
+void SearchEditPipes(unordered_map<int, Pipe*>& pipes)
 {
-    if (!PipeExist)
-    {
-        cout << "Pipe doesn`t exist.\n";
-        return;
+    cout << "1 - by name, 2 - in repair: ";
+    vector<int> found;
+    if (GetCorrectNumber(1, 2) == 1) {
+        string name; cout << "Name: "; INPUT_LINE(cin, name);
+            found = Search(pipes, name, filter_pipe_name);
     }
-    cout << "Pipe:\n";
-    cout << "d = " << p.d << endl;
-    cout << "l = " << p.l << endl;
-    cout << "n = " << p.n << endl;
-    cout << "status: " << (p.isWorking ? "" : "don't ") << "work.\n";
-}
-void PrintCS(const CS& cs, bool CsExist)
-{
-    if (!CsExist)
-    {
-        cout << "CS doesn`t exist.\n";
-        return;
+    else {
+        found = Search(pipes, true, filter_pipe_repair);
     }
-    cout << "CS:\n";
-    cout << "name of CS = " << cs.n2 << endl;
-    cout << "workshops = " << cs.workshop << endl;
-    cout << "actworkshops = " << cs.actworkshop << endl;
-    cout << "class of station = " << cs.station << endl;
-}
-void EditPipe(Pipe& p, bool PipeExist)
-{
-    if (!PipeExist)
-    {
-        cout << "Pipe doesn`t exist.\n";
-        return;
-    }
-    cout << "Pipe is " << (p.isWorking ? "" : "not ") << "working now.\n";
-    cout << "1 - Pipe is working" << endl;
-    cout << "2 - Pipe isn`t working." << endl;
 
-    int choice;
-    while (!(cin >> choice && cin.peek() == '\n' && (choice == 1 || choice == 2)))
-    {
-        cerr << "Error: enter 1 or 2" << endl;
-        cin.clear();
-        cin.ignore(1000, '\n');
-    }
-    p.isWorking = (choice == 1);
-    cout << "Pipe is changed.\n";
-}
-void EditCs(CS& cs, bool CsExist)
-{
-    if (!CsExist)
-    {
-        cout << "CS doesn`t exist.\n";
-        return;
-    }
-    cout << "workshops = " << cs.workshop << endl;
-    cout << "actworkshops = " << cs.actworkshop << endl;
-    cout << "1 - Start workshop." << endl;
-    cout << "2 - Stop workshop." << endl;
-    int choice2;
-    while (!(cin >> choice2 && cin.peek() == '\n' && (choice2 == 1 || choice2 == 2)))
-    {
-        cerr << "Error: enter 1 or 2" << endl;
-        cin.clear();
-        cin.ignore(10000, '\n');
-        cin >> choice2;
-    }
-    if (choice2 == 1)
-    {
-        if (cs.actworkshop < cs.workshop)
-        {
-            cs.actworkshop++;
-            cout << "Workshop started.\n";
-        }
-        else
-            cout << "All workshops are active.\n";
-    }
-    else
-    {
-        if (cs.actworkshop > 0)
-        {
-            cs.actworkshop--;
-            cout << "Workshop stopped.\n";
-        }
-        else
-            cout << "There are not active workshops.\n";
+    if (found.empty()) { cout << "Nothing found.\n"; return; }
+    for (int id : found) cout << id << " ";
+    cout << "\n";
+
+    vector<int> chosen = select_ids(found);
+    cout << "1 - work, 2 - repair, 3 - delete: ";
+    int act = GetCorrectNumber(1, 3);
+
+    for (int id : chosen) {
+        if (act == 1) pipes[id]->setWorking(true);
+        else if (act == 2) pipes[id]->setWorking(false);
+        else { delete pipes[id]; pipes.erase(id); }
     }
 }
-void SavePipe(ofstream& fout, const Pipe& p, bool PipeExist)
+void SearchEditCS(unordered_map<int, CS*>& css)
 {
-    //ofstream fout("file.txt");//!!
-    fout << PipeExist << endl;
-    if (PipeExist)
-    {
-       fout << p.d << endl;
-       fout << p.l << endl;
-       fout << p.n << endl;
-       fout << p.isWorking << endl;
-       cout << "Pipe saved.\n";
+    cout << "1 - by name, 2 - by idle %: ";
+    vector<int> found;
+    if (GetCorrectNumber(1, 2) == 1) {
+        string name; cout << "Name: "; INPUT_LINE(cin, name);
+            found = Search(css, name, filter_cs_name);
     }
-}
-void SaveCs(ofstream& fout, const CS & cs, bool CsExist)
-{
-    //ofstream fout("file.txt", ios::app);//!!
-    fout << CsExist << endl;
-    if (CsExist)
-    {
-        fout << cs.n2 << endl;
-        fout << cs.workshop << endl;
-        fout << cs.actworkshop << endl;
-        fout << cs.station << endl;
-        cout << "CS saved.\n";
+    else {
+        cout << "Min %: "; double p = GetCorrectNumber<double>(0.0, 100.0);
+        found = Search(css, p, filter_cs_idle);
     }
-}
-void SaveAll(const Pipe& p, bool PipeExist, const CS& cs, bool CsExist)
-{
-    ofstream fout("file.txt");
-    if (!fout)
-    {
-        cout << "File isn't found.\n";
-        return;
+
+    if (found.empty()) { cout << "Nothing found.\n"; return; }
+    for (int id : found) cout << id << " ";
+    cout << "\n";
+
+    vector<int> chosen = select_ids(found);
+    cout << "1 - start, 2 - stop, 3 - delete: ";
+    int act = GetCorrectNumber(1, 3);
+
+    for (int id : chosen) {
+        if (act == 1) css[id]->start_workshop();
+        else if (act == 2) css[id]->stop_workshop();
+        else { delete css[id]; css.erase(id); }
     }
-    SavePipe(fout, p, PipeExist);
-    SaveCs(fout, cs, CsExist);
-    fout.close();
-    cout << "All saved.\n";
-}
-void LoadPipe(ifstream& fin, Pipe& p, bool& PipeExist)
-{
-    //ifstream fin("file.txt");
-    fin >> PipeExist;
-    if (PipeExist)
-    {
-        fin >> p.d;
-        fin >> p.l;
-        getline(fin >> ws, p.n);
-        fin >> p.isWorking;
-        cout << "Pipe loaded.\n";
-    }
-    else
-    {
-        cout << "Pipe doesn't exist.\n";
-    }
-}
-void LoadCs(ifstream& fin, CS& cs, bool& CsExist)
-{
-    //ifstream fin("file.txt");
-    fin >> CsExist;
-    if (CsExist)
-    {
-        getline(fin >> ws, cs.n2);
-        fin >> cs.workshop;
-        fin >> cs.actworkshop;
-        fin >> cs.station;
-        cout << "CS loaded.\n";
-    }
-    else
-    {
-        cout << "CS doesn't exist.\n";
-    }
-}
-void LoadAll(Pipe& p, bool& PipeExist, CS& cs, bool& CsExist)
-{
-    ifstream fin("file.txt");
-    if (!fin)
-    {
-        cout << "File isn't found.\n";
-        return;
-    }
-    LoadPipe(fin, p, PipeExist);
-    LoadCs(fin, cs, CsExist);
-    fin.close();
-    cout << "All loaded.\n";
 }
 int main()
 {
-    Pipe p = {};
-    CS cs = {};
-    bool PipeExist = false;
-    bool CsExist = false;
-    int choice = -1;
-    do
+    redirect_output_wrapper cerr_out(cerr);
+    string time = format("{:%d_%m_%Y %H_%M_%OS}", system_clock::now());
+    ofstream logfile("log_" + time);
+    if (logfile)
+        cerr_out.redirect(logfile);
+    unordered_map <int, Pipe*> pipes;
+    unordered_map<int, CS*> css;
+    while(1)
     {
-        cout << "\n           MENU           \n";
-        cout << "1. Add pipe\n";
-        cout << "2. Add CS\n";
-        cout << "3. View all objects\n";
-        cout << "4. Edit pipe\n";
-        cout << "5. Edit CS\n";
-        cout << "6. Save\n";
-        cout << "7. Load\n";
-        cout << "0. Exit\n";
-        if (!(cin >> choice && cin.peek() == '\n' && choice >= 0 && choice <= 7))
+        PrintMenu();
+        switch (GetCorrectNumber(0, 9))
         {
-            cout << "Error: enter a number from 0 to 7.\n";
-            cin.clear();
-            cin.ignore(10000, '\n');
-            choice = -1;
-        }
-        switch (choice)
+        case 1:
         {
-            case 1:
-                if (PipeExist)
-                {
-                    cout << "Pipe has already existed.\n";
-                }
-                else
-                {
-                    NewPipe(p);
-                    PipeExist = true;
-                }
-                break;
-            case 2:
-                if (CsExist)
-                {
-                    cout << "CS has already existed.\n";
-                }
-                else
-                {
-                    NewCS(cs);
-                    CsExist = true;
-                }
-                break;
-            case 3:
-                PrintPipe(p, PipeExist);
-                PrintCS(cs, CsExist);
-                break;
-            case 4:
-                EditPipe(p, PipeExist);
-                break;
-            case 5:
-                EditCs(cs, CsExist);
-                break;
-            case 6:
-                SaveAll(p, PipeExist, cs, CsExist);
-                break;
-            case 7:
-                LoadAll(p, PipeExist, cs, CsExist);
-                break;
-            case 0:
-                cout << "Program finished.\n";
-                break;
+            Pipe * p = new Pipe();
+            cin >> *p;
+            int id = p->get_id();
+            pipes[id] = p;
+            cerr << "LOG: Added pipe id=" << id << endl;
+            break;
         }
-    } while (choice != 0);
+        case 2:
+        {
+            CS * cs = new CS();
+            cin >> *cs;
+            int id = cs->get_id();
+            css[id] = cs;
+            cerr << "LOG: Added CS id=" << id << endl;
+            break;
+        }
+        case 3:
+        {
+            for (const auto& [id, p] : pipes) cout << *p;
+            for (const auto& [id, cs] : css) cout << *cs;
+            break;
+        }
+        case 4:
+        {
+            SearchEditPipes(pipes);
+            break;
+        }
+        case 5:
+        {
+            SearchEditCS(css);
+            break;
+        }
+        case 6:
+        {
+            break;
+        }
+        case 7:
+        {
+            break;
+        }
+        case 0:
+        {
+            for (const auto& [id, p] : pipes) delete p;
+            for (const auto& [id, cs] : css) delete cs;
+            return 0;
+        }
+        default:
+            cout << "Wrong action" << endl;
+        }
+    }
     return 0;
 }
