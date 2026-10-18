@@ -125,11 +125,51 @@ void SearchEditCS(unordered_map<int, CS*>& css)
         else { delete css[id]; css.erase(id); }
     }
 }
+void SaveAll(const unordered_map<int, Pipe*>& pipes, const unordered_map<int, CS*>& css)
+{
+    string filename;
+    cout << "Enter filename to save: ";
+    INPUT_LINE(cin, filename);
+    ofstream fout(filename);
+    if (!fout) { cout << "Error opening file.\n"; return; }
+    fout << pipes.size() << '\n';
+    for (const auto& [id, p] : pipes) p->save(fout);
+    fout << css.size() << '\n';
+    for (const auto& [id, c] : css) c->save(fout);
+    cout << "All objects saved.\n";
+}
+void LoadAll(unordered_map<int, Pipe*>& pipes, unordered_map<int, CS*>& css)
+{
+    string filename;
+    cout << "Enter filename to load: ";
+    INPUT_LINE(cin, filename);
+    ifstream fin(filename);
+    if (!fin) { cout << "Error opening file.\n"; return; }
+    for (const auto& [id, p] : pipes) delete p;
+    pipes.clear();
+    for (const auto& [id, c] : css) delete c;
+    css.clear();
+    size_t count = 0;
+    fin >> count;
+    for (size_t i = 0; i < count; i++) {
+        Pipe* p = new Pipe();
+        p->load(fin);
+        pipes[p->get_id()] = p;
+    }
+    fin >> count;
+    for (size_t i = 0; i < count; i++) {
+        CS* c = new CS();
+        c->load(fin);
+        css[c->get_id()] = c;
+    }
+    cout << "All objects loaded.\n";
+    cerr << "LOG: Loaded from " << filename << endl;
+}
 int main()
 {
     redirect_output_wrapper cerr_out(cerr);
     string time = format("{:%d_%m_%Y %H_%M_%OS}", system_clock::now());
-    ofstream logfile("log_" + time);
+    ofstream logfile("log_" + time + ".txt");
     if (logfile)
         cerr_out.redirect(logfile);
     unordered_map <int, Pipe*> pipes;
@@ -167,8 +207,8 @@ int main()
             cout << "Available CS IDs: ";
             if (css.empty()) cout << "No css available.";
             else for (const auto& [id, cs] : css) cout << id << " ";
-            for (const auto& [id, cs] : css) cout << *cs;
             cout << "\n\n";
+            for (const auto& [id, cs] : css) cout << *cs;
             break;
         }
         case 4:
@@ -183,10 +223,12 @@ int main()
         }
         case 6:
         {
+            SaveAll(pipes, css);
             break;
         }
         case 7:
         {
+            LoadAll(pipes, css);
             break;
         }
         case 0:

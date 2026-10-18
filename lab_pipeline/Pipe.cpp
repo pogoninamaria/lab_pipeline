@@ -34,3 +34,21 @@ istream& operator >> (istream& in, Pipe& p)
     p.isWorking = GetCorrectNumber(0, 1) == 1;
     return in;
 }
+void Pipe::save(std::ostream& file) const
+{
+    file << id << '\n'
+        << d << '\n'
+        << l << '\n'
+        << n << '\n'
+        << isWorking << '\n';
+}
+void Pipe::load(std::istream& file)
+{
+    file >> id >> d >> l;
+    INPUT_LINE(file, n);
+    file >> isWorking;
+    if (id >= NextPipeID)
+    {
+        NextPipeID = id + 1;
+    }
+}

@@ -15,6 +15,7 @@ CS::CS()
 
 ostream& operator << (ostream& out, const CS& c)
 {
+    PRINT_PARAM(out, c.id);
     PRINT_PARAM(out, c.n2);
     PRINT_PARAM(out, c.workshop);
     PRINT_PARAM(out, c.actworkshop);
@@ -33,4 +34,22 @@ istream& operator >> (istream& in, CS& c)
     cout << "Input class of station: ";
     in >> c.station;
     return in;
+}
+void CS::save(std::ostream& file) const
+{
+    file << id << '\n'
+        << n2 << '\n'
+        << workshop << '\n'
+        << actworkshop << '\n'
+        << station << '\n';
+}
+void CS::load(std::istream& file)
+{
+    file >> id;
+    INPUT_LINE(file, n2);
+    file >> workshop >> actworkshop >> station;
+    if (id >= NextCsID)
+    {
+        NextCsID = id + 1;
+    }
 }

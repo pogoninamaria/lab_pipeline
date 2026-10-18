@@ -20,10 +20,10 @@ public:
     int get_actworkshop() const { return actworkshop; }
     char get_station() const { return station; }
     static int get_next_id() { return NextCsID; }
-
     void start_workshop() { if (actworkshop < workshop) actworkshop++; }
     void stop_workshop() { if (actworkshop > 0) actworkshop--; }
-
+    void save(std::ostream& file) const;
+    void load(std::istream& file);
     friend std::ostream& operator << (std::ostream& out, const CS& c);
     friend std::istream& operator >> (std::istream& in, CS& c);
 };
