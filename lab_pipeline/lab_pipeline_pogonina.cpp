@@ -55,22 +55,25 @@ vector<int> select_ids(const vector<int>& found)
     cout << "1 - All found, 2 - Specific IDs: ";
     if (GetCorrectNumber(1, 2) == 1) return found;
     vector<int> chosen;
-    int count = GetCorrectNumber(1, (int)found.size());
-    for (int i = 0; i < count; i++) {
+    cout << "Enter ID (0 to finish):\n";
+    while (true) 
+    {
         cout << "Enter ID: ";
-        int id = GetCorrectNumber(1, 10000);
-        if (find(found.begin(), found.end(), id) != found.end())
+        int id = GetCorrectNumber(0, 100000);
+        if (id == 0) break;
+        if (find(found.begin(), found.end(), id) != found.end()) {
             chosen.push_back(id);
+        }
         else {
-            cout << "Not found. Try again.\n";
-            i--;
+            cout << "Not found in the list, try again.\n";
         }
     }
     return chosen;
 }
 void SearchEditPipes(unordered_map<int, Pipe*>& pipes)
 {
-    cout << "1 - by name, 2 - in repair: ";
+    if (pipes.empty()) { cout << "No pipes available.\n"; return; }
+    cout << "1 - by name, 2 - in work: ";
     vector<int> found;
     if (GetCorrectNumber(1, 2) == 1) {
         string name; cout << "Name: "; INPUT_LINE(cin, name);
@@ -96,6 +99,7 @@ void SearchEditPipes(unordered_map<int, Pipe*>& pipes)
 }
 void SearchEditCS(unordered_map<int, CS*>& css)
 {
+    if (css.empty()) { cout << "No CS available.\n"; return; }
     cout << "1 - by name, 2 - by idle %: ";
     vector<int> found;
     if (GetCorrectNumber(1, 2) == 1) {
@@ -133,7 +137,7 @@ int main()
     while(1)
     {
         PrintMenu();
-        switch (GetCorrectNumber(0, 9))
+        switch (GetCorrectNumber(0, 7))
         {
         case 1:
         {
@@ -155,8 +159,16 @@ int main()
         }
         case 3:
         {
+            cout << "Available Pipes IDs: ";
+            if (pipes.empty()) cout << "No pipes available.";
+            else for (const auto& [id, p] : pipes) cout << id << " ";
+            cout << "\n\n";
             for (const auto& [id, p] : pipes) cout << *p;
+            cout << "Available CS IDs: ";
+            if (css.empty()) cout << "No css available.";
+            else for (const auto& [id, cs] : css) cout << id << " ";
             for (const auto& [id, cs] : css) cout << *cs;
+            cout << "\n\n";
             break;
         }
         case 4:

@@ -15,12 +15,13 @@ public:
     Pipe(int d, int l, const std::string& n, bool isWorking);
     int get_id() const { return id; }
     int get_diameter() const { return d; }
-    int get_length() const { return l; }
+    double get_length() const { return l; }
     const std::string& get_name() const { return n; }
     bool get_repair() const { return isWorking; }
     void setWorking(bool value) { isWorking = value; }
     static int get_next_id() { return NextPipeID; }
-
+    void save(std::ostream& file) const;
+    void load(std::istream& file);
     friend std::ostream& operator << (std::ostream& out, const Pipe& p);
     friend std::istream& operator >> (std::istream& in, Pipe& p);
 };

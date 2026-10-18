@@ -15,6 +15,7 @@ Pipe::Pipe()
 
 ostream& operator << (ostream& out, const Pipe& p)
 {
+    PRINT_PARAM(out, p.id);
     PRINT_PARAM(out, p.d);
     PRINT_PARAM(out, p.l);
     PRINT_PARAM(out, p.n);
