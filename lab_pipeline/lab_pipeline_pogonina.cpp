@@ -45,12 +45,12 @@ template <typename TObj, typename T>
 using Filter = bool(*)(const TObj& o, T x);
 
 template <typename TObj, typename T>
-vector<int> Search(const unordered_map<int, TObj*>& objs, T x, Filter<TObj, T> f)
+vector<int> Search(const unordered_map<int, TObj>& objs, T x, Filter<TObj, T> f)
 {
     vector<int> subset;
     for (const auto& [id, obj] : objs)
     {
-        if (f(*obj, x)) subset.push_back(id);
+        if (f(obj, x)) subset.push_back(id);
     }
     cerr << "LOG: search found " << subset.size() << " objects" << endl;
     return subset;
@@ -76,7 +76,7 @@ vector<int> select_ids(const vector<int>& found)
     }
     return chosen;
 }
-void SearchEditPipes(unordered_map<int, Pipe*>& pipes)
+void SearchEditPipes(unordered_map<int, Pipe>& pipes)
 {
     if (pipes.empty()) 
     {
@@ -115,17 +115,16 @@ void SearchEditPipes(unordered_map<int, Pipe*>& pipes)
     for (int id : chosen)
     {
         if (act == 1) 
-            pipes[id]->setWorking(true);
+            pipes[id].setWorking(true);
         else if (act == 2) 
-            pipes[id]->setWorking(false);
+            pipes[id].setWorking(false);
         else 
         { 
-            delete pipes[id]; 
-            pipes.erase(id); 
+           pipes.erase(id);
         }
     }
 }
-void SearchEditCS(unordered_map<int, CS*>& css)
+void SearchEditCS(unordered_map<int, CS>& css)
 {
     if (css.empty())
     { 
@@ -164,17 +163,16 @@ void SearchEditCS(unordered_map<int, CS*>& css)
     for (int id : chosen)
     {
         if (act == 1)
-            css[id]->start_workshop();
+            css[id].start_workshop();
         else if (act == 2)
-            css[id]->stop_workshop();
+            css[id].stop_workshop();
         else
         {
-            delete css[id];
             css.erase(id);
         }
     }
 }
-void SaveAll(const unordered_map<int, Pipe*>& pipes, const unordered_map<int, CS*>& css)
+void SaveAll(const unordered_map<int, Pipe>& pipes, const unordered_map<int, CS>& css)
 {
     string filename;
     cout << "Enter filename to save: ";
@@ -188,13 +186,13 @@ void SaveAll(const unordered_map<int, Pipe*>& pipes, const unordered_map<int, CS
     }
     fout << pipes.size() << '\n';
     for (const auto& [id, p] : pipes)
-        p->save(fout);
+        p.save(fout);
     fout << css.size() << '\n';
     for (const auto& [id, c] : css)
-        c->save(fout);
+        c.save(fout);
     cout << "All objects saved.\n";
 }
-void LoadAll(unordered_map<int, Pipe*>& pipes, unordered_map<int, CS*>& css)
+void LoadAll(unordered_map<int, Pipe>& pipes, unordered_map<int, CS>& css)
 {
     string filename;
     cout << "Enter filename to load: ";
@@ -205,26 +203,22 @@ void LoadAll(unordered_map<int, Pipe*>& pipes, unordered_map<int, CS*>& css)
         cout << "Error opening file.\n"; 
         return; 
     }
-    for (const auto& [id, p] : pipes) 
-        delete p;
     pipes.clear();
-    for (const auto& [id, c] : css) 
-        delete c;
     css.clear();
     size_t count = 0;
     fin >> count;
     for (size_t i = 0; i < count; i++)
     {
-        Pipe* p = new Pipe();
-        p->load(fin);
-        pipes[p->get_id()] = p;
+        Pipe p;
+        p.load(fin);
+        pipes[p.get_id()] = p;
     }
     fin >> count;
     for (size_t i = 0; i < count; i++)
     {
-        CS* c = new CS();
-        c->load(fin);
-        css[c->get_id()] = c;
+        CS c;
+        c.load(fin);
+        css[c.get_id()] = c;
     }
     cout << "All objects loaded.\n";
     cerr << "LOG: Loaded from " << filename << endl;
@@ -236,8 +230,8 @@ int main()
     ofstream logfile("log_" + time + ".txt");
     if (logfile)
         cerr_out.redirect(logfile);
-    unordered_map <int, Pipe*> pipes;
-    unordered_map<int, CS*> css;
+    unordered_map <int, Pipe> pipes;
+    unordered_map<int, CS> css;
     while(1)
     {
         PrintMenu();
@@ -245,18 +239,18 @@ int main()
         {
         case 1:
         {
-            Pipe * p = new Pipe();
-            cin >> *p;
-            int id = p->get_id();
+            Pipe p;
+            cin >> p;
+            int id = p.get_id();
             pipes[id] = p;
             cerr << "LOG: Added pipe id=" << id << endl;
             break;
         }
         case 2:
         {
-            CS * cs = new CS();
-            cin >> *cs;
-            int id = cs->get_id();
+            CS cs;
+            cin >> cs;
+            int id = cs.get_id();
             css[id] = cs;//!!
             cerr << "LOG: Added CS id=" << id << endl;//!!!
             break;
@@ -270,7 +264,7 @@ int main()
                 cout << id << " ";
             cout << "\n";
             for (const auto& [id, p] : pipes)
-                cout << *p;
+                cout << p;
             cout << "\n\n";
             cout << "Available CS IDs: ";
             if (css.empty())
@@ -279,7 +273,7 @@ int main()
                 cout << id << " ";
             cout << "\n";
             for (const auto& [id, cs] : css) 
-                cout << *cs;
+                cout << cs;
             break;
         }
         case 4:
@@ -304,10 +298,6 @@ int main()
         }
         case 0:
         {
-            for (const auto& [id, p] : pipes)
-                delete p;
-            for (const auto& [id, cs] : css) 
-                delete cs;
             return 0;
         }
         default:

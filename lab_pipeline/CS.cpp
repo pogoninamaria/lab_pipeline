@@ -32,7 +32,8 @@ istream& operator >> (istream& in, CS& c)
     cout << "Input active workshops (0 - " << c.workshop << "): ";
     c.actworkshop = GetCorrectNumber(0, c.workshop);
     cout << "Input class of station: ";
-    in >> c.station;//!!!
+    in >> c.station;
+    in.ignore(10000, '\n');
     return in;
 }
 void CS::save(std::ostream& file) const
