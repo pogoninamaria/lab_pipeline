@@ -5,7 +5,7 @@
 class CS
 {
     int id;
-    std::string n2;
+    std::string name;
     int workshop;
     int actworkshop;
     char station;
@@ -15,7 +15,7 @@ class CS
 public:
     CS();
     int get_id() const { return id; }
-    const std::string& get_name() const { return n2; }
+    const std::string& get_name() const { return name; }
     int get_workshop() const { return workshop; }
     int get_actworkshop() const { return actworkshop; }
     char get_station() const { return station; }

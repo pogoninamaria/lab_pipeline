@@ -7,7 +7,7 @@ int CS::NextCsID = 1;
 CS::CS()
 {
     id = NextCsID++;
-    n2 = "Unknown";
+    name = "Unknown";
     workshop = 0;
     actworkshop = 0;
     station = '?';
@@ -16,7 +16,7 @@ CS::CS()
 ostream& operator << (ostream& out, const CS& c)
 {
     PRINT_PARAM(out, c.id);
-    PRINT_PARAM(out, c.n2);
+    PRINT_PARAM(out, c.name);
     PRINT_PARAM(out, c.workshop);
     PRINT_PARAM(out, c.actworkshop);
     PRINT_PARAM(out, c.station);
@@ -26,19 +26,19 @@ ostream& operator << (ostream& out, const CS& c)
 istream& operator >> (istream& in, CS& c)
 {
     cout << "Input name of CS: ";
-    INPUT_LINE(in, c.n2);
-    cout << "Input workshops (1..1000): ";
+    INPUT_LINE(in, c.name);
+    cout << "Input workshops (1 - 1000): ";
     c.workshop = GetCorrectNumber(1, 1000);
-    cout << "Input active workshops (0.." << c.workshop << "): ";
+    cout << "Input active workshops (0 - " << c.workshop << "): ";
     c.actworkshop = GetCorrectNumber(0, c.workshop);
     cout << "Input class of station: ";
-    in >> c.station;
+    in >> c.station;//!!!
     return in;
 }
 void CS::save(std::ostream& file) const
 {
     file << id << '\n'
-        << n2 << '\n'
+        << name << '\n'
         << workshop << '\n'
         << actworkshop << '\n'
         << station << '\n';
@@ -46,7 +46,7 @@ void CS::save(std::ostream& file) const
 void CS::load(std::istream& file)
 {
     file >> id;
-    INPUT_LINE(file, n2);
+    INPUT_LINE(file, name);
     file >> workshop >> actworkshop >> station;
     if (id >= NextCsID)
     {

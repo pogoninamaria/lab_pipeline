@@ -7,7 +7,7 @@ class Pipe
     int id;
     int d;
     double l;
-    std::string n;
+    std::string name;
     bool isWorking;
     static int NextPipeID;
 public:
@@ -16,7 +16,7 @@ public:
     int get_id() const { return id; }
     int get_diameter() const { return d; }
     double get_length() const { return l; }
-    const std::string& get_name() const { return n; }
+    const std::string& get_name() const { return name; }
     bool get_repair() const { return isWorking; }
     void setWorking(bool value) { isWorking = value; }
     static int get_next_id() { return NextPipeID; }
