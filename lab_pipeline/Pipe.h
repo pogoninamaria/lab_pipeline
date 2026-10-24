@@ -13,6 +13,7 @@ class Pipe
 public:
     Pipe();
     Pipe(int d, int l, const std::string& n, bool isWorking);
+    static void reset_id() { NextPipeID = 1;}
     int get_id() const { return id; }
     int get_diameter() const { return d; }
     double get_length() const { return l; }

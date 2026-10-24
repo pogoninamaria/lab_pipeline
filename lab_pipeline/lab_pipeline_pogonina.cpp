@@ -1,4 +1,5 @@
 #include <iostream>
+#include <set>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -37,7 +38,6 @@ bool filter_cs_name(const CS& c, string x)
 }
 bool filter_cs_idle(const CS& c, double x)
 {
-    if (c.get_workshop() == 0) return false;
     double idle = 100.0 * (c.get_workshop() - c.get_actworkshop()) / c.get_workshop();
     return idle >= x;
 }
@@ -52,22 +52,23 @@ vector<int> Search(const unordered_map<int, TObj>& objs, T x, Filter<TObj, T> f)
     {
         if (f(obj, x)) subset.push_back(id);
     }
-    cerr << "LOG: search found " << subset.size() << " objects" << endl;
     return subset;
 }
-vector<int> select_ids(const vector<int>& found)
+set<int> select_ids(const vector<int>& found)
 {
     cout << "1 - All found, 2 - Specific IDs: ";
-    if (GetCorrectNumber(1, 2) == 1) return found;
-    vector<int> chosen;
+    if (GetCorrectNumber(1, 2) == 1)
+        return set<int>(found.begin(), found.end());
+    set<int> chosen;
     cout << "Enter ID (0 to finish):\n";
     while (true) 
     {
         cout << "Enter ID: ";
         int id = GetCorrectNumber(0, 100000);
-        if (id == 0) break;
+        if (id == 0)
+            break;
         if (find(found.begin(), found.end(), id) != found.end()) {//!!!!
-            chosen.push_back(id);
+            chosen.insert(id);
         }
         else
         {
@@ -84,20 +85,24 @@ void SearchEditPipes(unordered_map<int, Pipe>& pipes)
         return;
     }
 
-    cout << "1 - by name, 2 - in work: ";//!!!
+    cout << "1 - by name, 2 - in work, 3 - in repair: ";
     vector<int> found;
-    if (GetCorrectNumber(1, 2) == 1) 
+    int choice = GetCorrectNumber(1, 3);
+    if (choice == 1) 
     {
         string name;
         cout << "Name: "; 
         INPUT_LINE(cin, name);
         found = Search(pipes, name, filter_pipe_name);
     }
-    else
+    else if(choice == 2)
     {
         found = Search(pipes, true, filter_pipe_repair);
     }
-
+    else
+    {
+        found = Search(pipes, false, filter_pipe_repair);
+    }
     if (found.empty())
     {
         cout << "Nothing found.\n"; 
@@ -108,7 +113,7 @@ void SearchEditPipes(unordered_map<int, Pipe>& pipes)
         cout << id << " ";
     cout << "\n";
 
-    vector<int> chosen = select_ids(found);
+    set<int> chosen = select_ids(found);
     cout << "1 - work, 2 - repair, 3 - delete: ";
     int act = GetCorrectNumber(1, 3);
 
@@ -177,7 +182,6 @@ void SaveAll(const unordered_map<int, Pipe>& pipes, const unordered_map<int, CS>
     string filename;
     cout << "Enter filename to save: ";
     INPUT_LINE(cin, filename);
-    cerr << "LOG: saved file = " << filename << " " << endl;
     ofstream fout(filename);
     if (!fout)
     { 
@@ -205,23 +209,24 @@ void LoadAll(unordered_map<int, Pipe>& pipes, unordered_map<int, CS>& css)
     }
     pipes.clear();
     css.clear();
+    Pipe::reset_id();
+    CS::reset_id();
     size_t count = 0;
     fin >> count;
     for (size_t i = 0; i < count; i++)
     {
         Pipe p;
         p.load(fin);
-        pipes[p.get_id()] = p;
+        pipes.emplace(p.get_id(), p);
     }
     fin >> count;
     for (size_t i = 0; i < count; i++)
     {
         CS c;
         c.load(fin);
-        css[c.get_id()] = c;
+        css.emplace(c.get_id(), c);
     }
     cout << "All objects loaded.\n";
-    cerr << "LOG: Loaded from " << filename << endl;
 }
 int main()
 {
@@ -242,8 +247,7 @@ int main()
             Pipe p;
             cin >> p;
             int id = p.get_id();
-            pipes[id] = p;
-            cerr << "LOG: Added pipe id=" << id << endl;
+            pipes.emplace(id, p);
             break;
         }
         case 2:
@@ -251,8 +255,7 @@ int main()
             CS cs;
             cin >> cs;
             int id = cs.get_id();
-            css[id] = cs;//!!
-            cerr << "LOG: Added CS id=" << id << endl;//!!!
+            css.emplace(id, cs);
             break;
         }
         case 3:

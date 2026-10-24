@@ -1,0 +1,44 @@
+7
+file.txt
+sever
+west 2
+cs 777
+LOG: Loaded from file.txt
+3
+4
+1
+p
+LOG: search found 0 objects
+4
+1
+pipe
+LOG: search found 0 objects
+4
+2
+LOG: search found 1 objects
+1
+3
+3
+4
+3
+LOG: search found 1 objects
+1
+1
+4
+1
+pipe
+LOG: search found 0 objects
+4
+1
+west
+LOG: search found 1 objects
+1
+1
+3
+4
+1
+west
+LOG: search found 1 objects
+1
+2
+3

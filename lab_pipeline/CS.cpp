@@ -49,7 +49,7 @@ void CS::load(std::istream& file)
     file >> id;
     INPUT_LINE(file, name);
     file >> workshop >> actworkshop >> station;
-    if (id >= NextCsID)
+    if (id + 1 > NextCsID)
     {
         NextCsID = id + 1;
     }

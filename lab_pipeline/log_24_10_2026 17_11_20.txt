@@ -1,0 +1,25 @@
+1
+12346
+12345
+poop
+1
+LOG: Added pipe id=1
+2
+cs3
+245
+1
+LOG: Added CS id=1
+7
+file.txt
+sever
+west 2
+cs 777
+LOG: Loaded from file.txt
+3
+1
+1234
+23
+fklflg
+0
+LOG: Added pipe id=5
+3

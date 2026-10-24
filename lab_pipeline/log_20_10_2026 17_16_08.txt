@@ -1,0 +1,13 @@
+7
+file.txt
+sever
+west 2
+cs 777
+LOG: Loaded from file.txt
+3
+2
+cs 3
+245
+23
+LOG: Added CS id=3
+3

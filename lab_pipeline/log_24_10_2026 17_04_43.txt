@@ -1,0 +1,40 @@
+1
+1000
+12
+pipe 1
+0
+LOG: Added pipe id=1
+2
+cs 1
+456
+2
+LOG: Added CS id=1
+3
+1
+345
+4
+loap
+0
+LOG: Added pipe id=2
+3
+7
+file.txt
+sever
+west 2
+cs 777
+LOG: Loaded from file.txt
+3
+1
+1000
+34
+poop
+1
+LOG: Added pipe id=5
+3
+1
+234
+111
+up
+1
+LOG: Added pipe id=6
+3

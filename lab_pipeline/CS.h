@@ -14,6 +14,7 @@ class CS
 
 public:
     CS();
+    static void reset_id() { NextCsID = 1;}
     int get_id() const { return id; }
     const std::string& get_name() const { return name; }
     int get_workshop() const { return workshop; }

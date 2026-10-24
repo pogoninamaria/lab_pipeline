@@ -1,0 +1,13 @@
+1
+234
+45
+pipe 4567
+1
+LOG: Added pipe id=1
+7
+file.txt
+sever
+west 2
+cs 777
+LOG: Loaded from file.txt
+3

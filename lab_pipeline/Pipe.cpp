@@ -47,7 +47,7 @@ void Pipe::load(std::istream& file)
     file >> id >> d >> l;
     INPUT_LINE(file, name);
     file >> isWorking;
-    if (id >= NextPipeID)
+    if (id + 1 > NextPipeID)
     {
         NextPipeID = id + 1;
     }

@@ -1,0 +1,32 @@
+1
+123
+567
+pipeee1
+1
+LOG: Added pipe id=1
+2
+css 34
+567
+34
+LOG: Added CS id=1
+3
+7
+file.txt
+sever
+west 2
+cs 777
+LOG: Loaded from file.txt
+3
+2
+cs 333
+78
+3
+LOG: Added CS id=3
+3
+1
+456
+33334
+lope4
+0
+LOG: Added pipe id=5
+3
