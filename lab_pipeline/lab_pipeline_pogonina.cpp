@@ -38,27 +38,27 @@ bool filter_cs_name(const CS& c, string x)
 }
 bool filter_cs_idle(const CS& c, double x)
 {
-    double idle = 100.0 * (c.get_workshop() - c.get_actworkshop()) / c.get_workshop();
-    return idle >= x;
+    return c.get_idle() >= x;
 }
 template <typename TObj, typename T>
 using Filter = bool(*)(const TObj& o, T x);
 
 template <typename TObj, typename T>
-vector<int> Search(const unordered_map<int, TObj>& objs, T x, Filter<TObj, T> f)
+set<int> Search(const unordered_map<int, TObj>& objs, T x, Filter<TObj, T> f)
 {
-    vector<int> subset;
+    set<int> subset;
     for (const auto& [id, obj] : objs)
     {
-        if (f(obj, x)) subset.push_back(id);
+        if (f(obj, x)) 
+            subset.emplace(id);
     }
     return subset;
 }
-set<int> select_ids(const vector<int>& found)
+set<int> select_ids(const set<int>& found)
 {
     cout << "1 - All found, 2 - Specific IDs: ";
     if (GetCorrectNumber(1, 2) == 1)
-        return set<int>(found.begin(), found.end());
+        return set<int>(found.begin(), found.end());//
     set<int> chosen;
     cout << "Enter ID (0 to finish):\n";
     while (true) 
@@ -86,22 +86,22 @@ void SearchEditPipes(unordered_map<int, Pipe>& pipes)
     }
 
     cout << "1 - by name, 2 - in work, 3 - in repair: ";
-    vector<int> found;
+    set<int> found;
     int choice = GetCorrectNumber(1, 3);
     if (choice == 1) 
     {
         string name;
         cout << "Name: "; 
         INPUT_LINE(cin, name);
-        found = Search(pipes, name, filter_pipe_name);
+       found = Search(pipes, name, filter_pipe_name);
     }
     else if(choice == 2)
     {
-        found = Search(pipes, true, filter_pipe_repair);
+       found = Search(pipes, true, filter_pipe_repair);
     }
     else
     {
-        found = Search(pipes, false, filter_pipe_repair);
+       found = Search(pipes, false, filter_pipe_repair);
     }
     if (found.empty())
     {
@@ -137,7 +137,7 @@ void SearchEditCS(unordered_map<int, CS>& css)
         return;
     }
     cout << "1 - by name, 2 - by idle %: ";
-    vector<int> found;
+    set<int> found;
     if (GetCorrectNumber(1, 2) == 1)
     {
         string name;
@@ -217,14 +217,14 @@ void LoadAll(unordered_map<int, Pipe>& pipes, unordered_map<int, CS>& css)
     {
         Pipe p;
         p.load(fin);
-        pipes.emplace(p.get_id(), p);
+        pipes.emplace(p.get_id(), p);//
     }
     fin >> count;
     for (size_t i = 0; i < count; i++)
     {
         CS c;
         c.load(fin);
-        css.emplace(c.get_id(), c);
+        css.emplace(c.get_id(), c);//
     }
     cout << "All objects loaded.\n";
 }
