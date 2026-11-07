@@ -21,6 +21,7 @@ ostream& operator << (ostream& out, const Pipe& p)
     PRINT_PARAM(out, p.l);
     PRINT_PARAM(out, p.name);
     PRINT_PARAM(out, p.isWorking);
+    PRINT_PARAM(out, p.isConnected);
     return out;
 }
 istream& operator >> (istream& in, Pipe& p)

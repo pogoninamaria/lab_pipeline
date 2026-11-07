@@ -1,0 +1,11 @@
+7
+file.txt
+sever
+west 2
+cs 777
+3
+4
+2
+1
+3
+3

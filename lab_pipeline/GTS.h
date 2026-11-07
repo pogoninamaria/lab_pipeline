@@ -8,12 +8,13 @@
 
 struct Link
 {
-	int cs_in;
-	int cs_out;
-	int pipe_id;
+	int cs_in = -1;
+	int cs_out = -1;
+	int pipe_id = -1;
 };
 class GTS
 {
+public:
     std::unordered_map<int, Pipe> pipes;
     std::unordered_map<int, CS> css;
     std::vector<Link> links;

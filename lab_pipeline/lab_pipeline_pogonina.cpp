@@ -1,13 +1,13 @@
 #include <iostream>
 #include <set>
 #include <string>
-#include <vector>
 #include <unordered_map>
 #include <fstream>
 #include <chrono>
 #include <format>
 #include "Pipe.h"
 #include "CS.h"
+#include "GTS.h"
 #include "utils.h"
 using namespace std;
 using namespace chrono;
@@ -21,6 +21,8 @@ void PrintMenu()
         << "5. Search and edit cs" << endl
         << "6. Save" << endl
         << "7. Load" << endl
+        << "8. Link CS" << endl
+        << "9. Topological Sort" << endl
         << "0. Exit" << endl
         << "Choose action: ";
 }
@@ -77,9 +79,9 @@ set<int> select_ids(const set<int>& found)
     }
     return chosen;
 }
-void SearchEditPipes(unordered_map<int, Pipe>& pipes)
+void SearchEditPipes(GTS& gts)
 {
-    if (pipes.empty()) 
+    if (gts.pipes.empty()) 
     {
         cout << "No pipes available.\n";
         return;
@@ -93,15 +95,15 @@ void SearchEditPipes(unordered_map<int, Pipe>& pipes)
         string name;
         cout << "Name: "; 
         INPUT_LINE(cin, name);
-       found = Search(pipes, name, filter_pipe_name);
+       found = Search(gts.pipes, name, filter_pipe_name);
     }
     else if(choice == 2)
     {
-       found = Search(pipes, true, filter_pipe_repair);
+       found = Search(gts.pipes, true, filter_pipe_repair);
     }
     else
     {
-       found = Search(pipes, false, filter_pipe_repair);
+       found = Search(gts.pipes, false, filter_pipe_repair);
     }
     if (found.empty())
     {
@@ -120,18 +122,18 @@ void SearchEditPipes(unordered_map<int, Pipe>& pipes)
     for (int id : chosen)
     {
         if (act == 1) 
-            pipes[id].setWorking(true);
+            gts.pipes[id].setWorking(true);
         else if (act == 2) 
-            pipes[id].setWorking(false);
+            gts.pipes[id].setWorking(false);
         else 
         { 
-           pipes.erase(id);
+           gts.deletePipe(id);
         }
     }
 }
-void SearchEditCS(unordered_map<int, CS>& css)
+void SearchEditCS(GTS& gts)
 {
-    if (css.empty())
+    if (gts.css.empty())
     { 
         cout << "No CS available.\n";
         return;
@@ -143,13 +145,13 @@ void SearchEditCS(unordered_map<int, CS>& css)
         string name;
         cout << "Name: ";
         INPUT_LINE(cin, name);
-        found = Search(css, name, filter_cs_name);
+        found = Search(gts.css, name, filter_cs_name);
     }
     else
     {
         cout << "Min %: ";
         double p = GetCorrectNumber<double>(0.0, 100.0);
-        found = Search(css, p, filter_cs_idle);
+        found = Search(gts.css, p, filter_cs_idle);
     }
 
     if (found.empty())
@@ -168,16 +170,16 @@ void SearchEditCS(unordered_map<int, CS>& css)
     for (int id : chosen)
     {
         if (act == 1)
-            css[id].start_workshop();
+            gts.css[id].start_workshop();
         else if (act == 2)
-            css[id].stop_workshop();
+            gts.css[id].stop_workshop();
         else
         {
-            css.erase(id);
+            gts.deleteCS(id);
         }
     }
 }
-void SaveAll(const unordered_map<int, Pipe>& pipes, const unordered_map<int, CS>& css)
+void SaveAll(const GTS& gts)
 {
     string filename;
     cout << "Enter filename to save: ";
@@ -188,15 +190,20 @@ void SaveAll(const unordered_map<int, Pipe>& pipes, const unordered_map<int, CS>
         cout << "Error opening file.\n";
         return;
     }
-    fout << pipes.size() << '\n';
-    for (const auto& [id, p] : pipes)
+    fout << gts.pipes.size() << '\n';
+    for (const auto& [id, p] : gts.pipes)
         p.save(fout);
-    fout << css.size() << '\n';
-    for (const auto& [id, c] : css)
+    fout << gts.css.size() << '\n';
+    for (const auto& [id, c] : gts.css)
         c.save(fout);
+    fout << gts.links.size() << '\n';
+    for (const auto& link : gts.links)
+    {
+        fout << link.cs_in << ' ' << link.cs_out << ' ' << link.pipe_id << '\n';
+    }
     cout << "All objects saved.\n";
 }
-void LoadAll(unordered_map<int, Pipe>& pipes, unordered_map<int, CS>& css)
+void LoadAll(GTS& gts)
 {
     string filename;
     cout << "Enter filename to load: ";
@@ -207,8 +214,9 @@ void LoadAll(unordered_map<int, Pipe>& pipes, unordered_map<int, CS>& css)
         cout << "Error opening file.\n"; 
         return; 
     }
-    pipes.clear();
-    css.clear();
+    gts.pipes.clear();
+    gts.css.clear();
+    gts.links.clear();
     Pipe::reset_id();
     CS::reset_id();
     size_t count = 0;
@@ -217,14 +225,21 @@ void LoadAll(unordered_map<int, Pipe>& pipes, unordered_map<int, CS>& css)
     {
         Pipe p;
         p.load(fin);
-        pipes.emplace(p.get_id(), p);//
+        gts.pipes.emplace(p.get_id(), p);
     }
     fin >> count;
     for (size_t i = 0; i < count; i++)
     {
         CS c;
         c.load(fin);
-        css.emplace(c.get_id(), c);//
+        gts.css.emplace(c.get_id(), c);
+    }
+    fin >> count;
+    for (size_t i = 0; i < count; i++)
+    {
+        Link link;
+        fin >> link.cs_in >> link.cs_out >> link.pipe_id;
+        gts.links.push_back(link);
     }
     cout << "All objects loaded.\n";
 }
@@ -236,68 +251,74 @@ int main()
     if (logfile)
         cerr_out.redirect(logfile);
 
-    unordered_map <int, Pipe> pipes;
-    unordered_map<int, CS> css;
+    GTS gts;
+
     while(1)
     {
         PrintMenu();
-        switch (GetCorrectNumber(0, 7))
+        switch (GetCorrectNumber(0, 9))
         {
         case 1:
         {
             Pipe p;
             cin >> p;
-            int id = p.get_id();
-            pipes.emplace(id, p);
+            gts.pipes.emplace(p.get_id(), p);
             break;
         }
         case 2:
         {
             CS cs;
             cin >> cs;
-            int id = cs.get_id();
-            css.emplace(id, cs);
+            gts.css.emplace(cs.get_id(), cs);
             break;
         }
         case 3:
         {
             cout << "Available Pipes IDs: ";
-            if (pipes.empty())
+            if (gts.pipes.empty())
                 cout << "No pipes available.";
-            else for (const auto& [id, p] : pipes)
+            else for (const auto& [id, p] : gts.pipes)
                 cout << id << " ";
             cout << "\n";
-            for (const auto& [id, p] : pipes)
+            for (const auto& [id, p] : gts.pipes)
                 cout << p;
             cout << "\n\n";
             cout << "Available CS IDs: ";
-            if (css.empty())
+            if (gts.css.empty())
                 cout << "No css available.";
-            else for (const auto& [id, cs] : css) 
+            else for (const auto& [id, cs] : gts.css) 
                 cout << id << " ";
             cout << "\n";
-            for (const auto& [id, cs] : css) 
+            for (const auto& [id, cs] : gts.css) 
                 cout << cs;
             break;
         }
         case 4:
         {
-            SearchEditPipes(pipes);
+            SearchEditPipes(gts);
             break;
         }
         case 5:
         {
-            SearchEditCS(css);
+            SearchEditCS(gts);
             break;
         }
         case 6:
         {
-            SaveAll(pipes, css);
+            SaveAll(gts);
             break;
         }
         case 7:
         {
-            LoadAll(pipes, css);
+            LoadAll(gts);
+            break;
+        }
+        case 8: {
+            gts.linkCS();
+            break;
+        }
+        case 9: {
+            gts.topologicalSort();
             break;
         }
         case 0:

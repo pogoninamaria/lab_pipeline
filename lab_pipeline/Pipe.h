@@ -27,7 +27,7 @@ public:
     void set_diametr(int diam) { d = diam; }
     void setWorking(bool value) { isWorking = value; }
     void connect() { isConnected = true; }
-    void connect() { isConnected = false; }
+    void disconnect() { isConnected = false; }
 
     void save(std::ostream& file) const;
     void load(std::istream& file);
