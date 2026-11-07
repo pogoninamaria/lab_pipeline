@@ -235,6 +235,7 @@ int main()
     ofstream logfile("log_" + time + ".txt");
     if (logfile)
         cerr_out.redirect(logfile);
+
     unordered_map <int, Pipe> pipes;
     unordered_map<int, CS> css;
     while(1)

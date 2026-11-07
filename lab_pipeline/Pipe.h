@@ -10,6 +10,7 @@ class Pipe
     std::string name;
     bool isWorking;
     static int NextPipeID;
+    bool isConnected;
 public:
     Pipe();
     Pipe(int d, int l, const std::string& n, bool isWorking);
@@ -22,8 +23,11 @@ public:
     double get_length() const { return l; }
     const std::string& get_name() const { return name; }
     bool get_repair() const { return isWorking; }
-
+    bool get_connect() const { return isConnected;  }
+    void set_diametr(int diam) { d = diam; }
     void setWorking(bool value) { isWorking = value; }
+    void connect() { isConnected = true; }
+    void connect() { isConnected = false; }
 
     void save(std::ostream& file) const;
     void load(std::istream& file);

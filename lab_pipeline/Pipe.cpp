@@ -11,6 +11,7 @@ Pipe::Pipe()
     l = 0.0;
     name = "Unknown";
     isWorking = true;
+    isConnected = false;
 }
 
 ostream& operator << (ostream& out, const Pipe& p)
