@@ -23,5 +23,6 @@ public:
     void deleteCS(int id);
     void deletePipe(int id);
     void topologicalSort();
+    void disconnectLink();
 };
 

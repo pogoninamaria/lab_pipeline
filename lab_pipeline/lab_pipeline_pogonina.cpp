@@ -22,7 +22,8 @@ void PrintMenu()
         << "6. Save" << endl
         << "7. Load" << endl
         << "8. Link CS" << endl
-        << "9. Topological Sort" << endl
+        << "9. Disconnect Link" << endl
+        << "10. Topological Sort" << endl
         << "0. Exit" << endl
         << "Choose action: ";
 }
@@ -256,7 +257,7 @@ int main()
     while(1)
     {
         PrintMenu();
-        switch (GetCorrectNumber(0, 9))
+        switch (GetCorrectNumber(0, 10))
         {
         case 1:
         {
@@ -313,11 +314,18 @@ int main()
             LoadAll(gts);
             break;
         }
-        case 8: {
+        case 8:
+        {
             gts.linkCS();
             break;
         }
-        case 9: {
+        case 9:
+        {
+            gts.disconnectLink();
+            break;
+        }
+        case 10:
+        {
             gts.topologicalSort();
             break;
         }

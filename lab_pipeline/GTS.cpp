@@ -1,5 +1,6 @@
 #include "GTS.h"
 #include "utils.h"
+
 using namespace std;
 
 void GTS::linkCS() {
@@ -9,7 +10,7 @@ void GTS::linkCS() {
     int out_id = GetCorrectNumber(1, 10000);
     if (css.find(in_id) == css.end() || css.find(out_id) == css.end())
     {
-        cout << "Error: CS not found.\n";
+        cout << "CS not found.\n";
         return;
     }
     cout << "Enter diameter (500, 700, 1000, 1400): ";
@@ -21,7 +22,7 @@ void GTS::linkCS() {
         {
             break;
         }
-        cout << "Error: only 500, 700, 1000 or 1400.";
+        cout << "Input only 500, 700, 1000 or 1400.";
     }
     for (auto& [id, p] : pipes)
     {
@@ -32,7 +33,7 @@ void GTS::linkCS() {
             return;
         }
     }
-    cout << "Error: no free pipe with this diameter " << diam << " found.\n";
+    cout << "No free pipe with this diameter " << diam << " found.\n";
 }
 void GTS::deleteCS(int id)
 {
@@ -40,7 +41,7 @@ void GTS::deleteCS(int id)
     {
         if (link.cs_in == id || link.cs_out == id)
         {
-            cout << "Error: disconnect CS.\n";
+            cout << "First disconnect CS.\n";
             return;
         }
     }
@@ -53,7 +54,7 @@ void GTS::deletePipe(int id)
     {
         if (link.pipe_id == id)
         {
-            cout << "Error: disconnect pipe.\n";
+            cout << "First disconnect pipe.\n";
             return;
         }
     }
@@ -62,65 +63,76 @@ void GTS::deletePipe(int id)
 }
 void GTS::topologicalSort()
 {
-    int n = css.size();
-    if (n == 0)
+    if (css.empty())
     {
-        cout << "No CS available for sorting.\n";
+        cout << "No CS available.\n";
         return;
     }
-    unordered_map<int, int> id_to_idx;
-    unordered_map<int, int> idx_to_id;
-    int idx = 0;
+    unordered_map<int, int> in_degree;
     for (const auto& [id, cs] : css)
     {
-        id_to_idx[id] = idx;
-        idx_to_id[idx] = id;
-        idx++;
+        in_degree[id] = 0;
     }
-    vector<vector<int>> adj(n, vector<int>(n, 0));
-    vector<int> in_degree(n, 0);
     for (const auto& link : links)
     {
-        int u = id_to_idx[link.cs_in];
-        int v = id_to_idx[link.cs_out];
-        adj[u][v] = 1;
-        in_degree[v]++;
+        in_degree[link.cs_out]++;
     }
     queue<int> q;
-    for (int i = 0; i < n; i++)
+    for (const auto& [id, deg] : in_degree)
     {
-        if (in_degree[i] == 0)
-        {
-            q.push(i);
-        }
+        if (deg == 0) q.push(id);
     }
     vector<int> order;
     while (!q.empty())
     {
-        int u = q.front();
+        int current_cs = q.front();
         q.pop();
-        order.push_back(u);
-        for (int v = 0; v < n; v++)
+        order.push_back(current_cs);
+        for (const auto& link : links)
         {
-            if (adj[u][v] == 1)
+            if (link.cs_in == current_cs)
             {
-                in_degree[v]--;
-                if (in_degree[v] == 0)
+                int next_cs = link.cs_out;
+                in_degree[next_cs]--;
+                if (in_degree[next_cs] == 0)
                 {
-                    q.push(v);
+                    q.push(next_cs);
                 }
             }
         }
     }
-    if (order.size() != n)
+    if (order.size() != css.size())
     {
-        cout << "Error: graph contains a cycle.\n";
+        cout << "Graph contains a cycle.\n";
         return;
     }
     cout << "Topological order of CS: ";
-    for (int i : order)
+    for (int id : order)
     {
-        cout << idx_to_id[i] << " ";
+        cout << id << " ";
     }
     cout << "\n";
+}
+void GTS::disconnectLink()
+{
+    if (links.empty())
+    {
+        cout << "No connections to disconnect.\n";
+        return;
+    }
+    cout << "Current connections:\n";
+    for (int i = 0; i < links.size(); i++)
+    {
+        cout << i + 1 << ". CS " << links[i].cs_in << " -> CS " << links[i].cs_out
+            << " (Pipe id=" << links[i].pipe_id << ")\n";
+    }
+    cout << "Select connection number to remove (0 - cancel): ";
+    int choice = GetCorrectNumber(0, 100);
+    if (choice > 0)
+    {
+        int pipe_id = links[choice - 1].pipe_id;
+        pipes[pipe_id].disconnect();
+        links.erase(links.begin() + choice - 1);
+        cout << "Connection removed. Pipe " << pipe_id << " is free.\n";
+    }
 }
