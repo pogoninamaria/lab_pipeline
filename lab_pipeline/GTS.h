@@ -20,6 +20,7 @@ public:
     std::vector<Link> links;
 
     void linkCS();
+    bool isPathExist(int start, int end);
     void deleteCS(int id);
     void deletePipe(int id);
     void topologicalSort();

@@ -1,8 +1,41 @@
 #include "GTS.h"
 #include "utils.h"
-
+#include <set>
+#include <map>
 using namespace std;
 
+bool GTS::isPathExist(int start, int end)
+{
+    if (start == end)
+    {
+        return true;
+    }
+    queue<int> q;
+    set<int> visited;
+    q.push(start);
+    visited.insert(start);
+    while (!q.empty())
+    {
+        int current = q.front();
+        q.pop();
+        for (const auto& link : links)
+        {
+            if (link.cs_in == current)
+            {
+                if (link.cs_out == end)
+                {
+                    return true;
+                }
+                if (visited.find(link.cs_out) == visited.end())
+                {
+                    visited.insert(link.cs_out);
+                    q.push(link.cs_out);
+                }
+            }
+        }
+    }
+    return false;
+}
 void GTS::linkCS() {
     cout << "Enter input CS id: ";
     int in_id = GetCorrectNumber(1, 10000);
@@ -11,6 +44,10 @@ void GTS::linkCS() {
     if (css.find(in_id) == css.end() || css.find(out_id) == css.end())
     {
         cout << "CS not found.\n";
+        return;
+    }
+    if (isPathExist(out_id, in_id)) {
+        cout << "Link has a cycle.\n";
         return;
     }
     cout << "Enter diameter (500, 700, 1000, 1400): ";
@@ -29,7 +66,7 @@ void GTS::linkCS() {
         if (!p.get_connect() && p.get_diameter() == diam) {
             p.connect();
             links.push_back({ in_id, out_id, id });
-            cout << "Successfully linked using pipe id=" << id << "\n";
+            cout << "Linked using pipe id=" << id << "\n";
             return;
         }
     }
@@ -68,7 +105,7 @@ void GTS::topologicalSort()
         cout << "No CS available.\n";
         return;
     }
-    unordered_map<int, int> in_degree;
+    map<int, int> in_degree;
     for (const auto& [id, cs] : css)
     {
         in_degree[id] = 0;
