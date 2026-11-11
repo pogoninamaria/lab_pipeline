@@ -70,7 +70,7 @@ set<int> select_ids(const set<int>& found)
         int id = GetCorrectNumber(0, 100000);
         if (id == 0)
             break;
-        if (find(found.begin(), found.end(), id) != found.end()) {//!!!!
+        if (find(found.begin(), found.end(), id) != found.end()) {
             chosen.insert(id);
         }
         else

@@ -74,12 +74,22 @@ void GTS::linkCS() {
 }
 void GTS::deleteCS(int id)
 {
-    for (const auto& link : links)
+    for (int i = 0; i < links.size(); i++)
     {
-        if (link.cs_in == id || link.cs_out == id)
+        if (links[i].cs_in == id || links[i].cs_out == id)
         {
-            cout << "First disconnect CS.\n";
-            return;
+            cout << "CS is in link. Do you want to disconnect it and delete? (1 - yes, 0 - no): ";
+            if (GetCorrectNumber(0, 1) == 1)
+            {
+                pipes[links[i].pipe_id].disconnect();
+                links.erase(links.begin() + i);
+                i--;
+            }
+            else
+            {
+                cout << "Deletion cancelled.\n";
+                return;
+            }
         }
     }
     css.erase(id);
@@ -87,12 +97,21 @@ void GTS::deleteCS(int id)
 }
 void GTS::deletePipe(int id)
 {
-    for (const auto& link : links)
+    for (int i = 0; i < links.size(); i++)
     {
-        if (link.pipe_id == id)
+        if (links[i].pipe_id == id)
         {
-            cout << "First disconnect pipe.\n";
-            return;
+            cout << "Pipe is in link. Do you want to disconnect it and delete? (1 - yes, 0 - no): ";
+            if (GetCorrectNumber(0, 1) == 1)
+            {
+                links.erase(links.begin() + i);
+                i--;
+            }
+            else
+            {
+                cout << "Deletion cancelled.\n";
+                return;
+            }
         }
     }
     pipes.erase(id);
